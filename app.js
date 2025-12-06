@@ -7,8 +7,8 @@ const app = express()
 require('dotenv').config()
 const PORT = process.env.PORT || 3000
 const upload = multer({storage : storage})
-const fs = require('fs')
-
+const fs = require('fs').promises
+const path = require('path')
 
 
 // calling connectToDatabase function
@@ -25,6 +25,11 @@ app.post('/car', upload.single('image'), async (req, res) => {
             filename = `http://localhost:3000/${req.file.filename}`
         }
         const { carName, carBrand, carPrice } = req.body
+        if (!carName || !carBrand || !carPrice) {
+            return res.status(404).json({
+                message : "Please enter all the fields correctly"
+            })
+        }
         await Car.create({
             carName,
             carBrand,
@@ -36,7 +41,7 @@ app.post('/car', upload.single('image'), async (req, res) => {
         })
     } catch (error) {
         res.status(500).json({
-            message: "Failed to create car",
+            message: "Fail to create car",
             error: error.message
         })
     }
@@ -47,7 +52,7 @@ app.get('/car', async (req, res) => {
     try {
         const cars = await Car.find()
         res.status(200).json({
-            message: cars.length ? "No cars found" : "Cars fetched successfully",
+            message: cars.length ? "Cars fetched successfully": "No cars found" ,
             ...(cars.length && {data : cars})
         })
     } catch (error) {
@@ -85,18 +90,19 @@ app.delete('/car/:id', async (req, res) => {
                 message : "Car not found"
             })
         }
-        if(car.carImage.startsWith('http://localhost:3000/')){
+        if (car.carImage.startsWith('http://localhost:3000/')) {
             const filename = car.carImage.replace("http://localhost:3000/", "")
             const filePath = path.join(__dirname, "storage", filename)
-            fs.unlink(filePath, (err) => {
-                console.log(err 
-                    ? `Failed to delete file : ${err.message}` 
-                    : `File deleted successfully : ${filename}`)
-            })
+            try {
+                await fs.unlink(filePath)
+                console.log(`File deleted successfully : ${filename}`)
+            } catch (error) {
+                console.log(`Fail to delete the file : ${error.message}`)
+            }
         }
         await Car.findByIdAndDelete(id)
         res.status(200).json({
-            message : "Car deleted successfully"
+            message: "Car deleted successfully"
         })
     } catch (error) {
         res.status(500).json({
@@ -121,19 +127,20 @@ app.patch('/car/:id', upload.single('image'), async (req, res) => {
             if (filename.startsWith('http://localhost:3000/')) {
                 const oldFileName = filename.replace("http://localhost:3000/", "")
                 const filepath = path.join(__dirname, "storage", oldFileName)
-                fs.unlink(filepath, (err) => {
-                    console.log(err
-                        ? `Fail to delete the file : ${err.message}`
-                        : `File deleted successfully : ${filename}`)
-                })
-                filename = `http://localhost:3000/${req.file.filename}`
+                try {
+                    await fs.unlink(filepath)
+                    console.log(`File deleted successfully : ${filename}`)
+                } catch (error) {
+                    console.log(`Fail to delete the file : ${error.message}`)
+                }
             }
+            filename = `http://localhost:3000/${req.file.filename}`
         }
         const { carName, carBrand, carPrice } = req.body
         await Car.findByIdAndUpdate(id, {
-            carName,
-            carBrand,
-            carPrice,
+            carName : carName || car.carName,
+            carBrand : carBrand || car.carBrand,
+            carPrice : carPrice || car.carPrice,
             carImage: filename
         })
         res.status(200).json({
