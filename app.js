@@ -16,7 +16,18 @@ connectToDatabase()
 
 
 // Post API
-app.post('/car', upload.single('image'), async (req, res) => {
+app.post('/car', (req, res, next) => {
+    upload.single('image')
+    (req, res, (error) => {
+        if(error){
+            return res.status(400).json({
+                message : "Fail to upload file",
+                error : error.message
+            })
+        }
+        next()
+    })
+}, async (req, res) => {
     try {
         let filename
         if (!req.file) {
