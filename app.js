@@ -6,9 +6,16 @@ const { multer, storage } = require('./middleware/multerConfig')
 const app = express()
 require('dotenv').config()
 const PORT = process.env.PORT || 3000
-const upload = multer({storage : storage})
+const upload = multer({ storage: storage })
 const fs = require('fs').promises
 const path = require('path')
+const cors = require('cors')
+
+
+// Cors configuration
+app.use(cors({
+    origin: ['http://localhost:5173']
+}))
 
 
 // calling connectToDatabase function
@@ -18,15 +25,15 @@ connectToDatabase()
 // Post API
 app.post('/car', (req, res, next) => {
     upload.single('image')
-    (req, res, (error) => {
-        if(error){
-            return res.status(400).json({
-                message : "Fail to upload file",
-                error : error.message
-            })
-        }
-        next()
-    })
+        (req, res, (error) => {
+            if (error) {
+                return res.status(400).json({
+                    message: "Fail to upload file",
+                    error: error.message
+                })
+            }
+            next()
+        })
 }, async (req, res) => {
     try {
         let filename
@@ -38,7 +45,7 @@ app.post('/car', (req, res, next) => {
         const { carName, carBrand, carPrice } = req.body
         if (!carName || !carBrand || !carPrice) {
             return res.status(404).json({
-                message : "Please enter all the fields correctly"
+                message: "Please enter all the fields correctly"
             })
         }
         await Car.create({
@@ -63,8 +70,8 @@ app.get('/car', async (req, res) => {
     try {
         const cars = await Car.find()
         res.status(200).json({
-            message: cars.length ? "Cars fetched successfully": "No cars found" ,
-            ...(cars.length && {data : cars})
+            message: cars.length ? "Cars fetched successfully" : "No cars found",
+            ...(cars.length && { data: cars })
         })
     } catch (error) {
         res.status(500).json({
@@ -80,8 +87,8 @@ app.get('/car/:id', async (req, res) => {
         const { id } = req.params
         const car = await Car.findById(id)
         res.status(car ? 200 : 404).json({
-            message : car ? "Car fetched successfully" : "Car not found",
-            ...(car && { data : car })
+            message: car ? "Car fetched successfully" : "Car not found",
+            ...(car && { data: car })
         })
     } catch (error) {
         res.status(500).json({
@@ -94,11 +101,11 @@ app.get('/car/:id', async (req, res) => {
 // Delete Single API
 app.delete('/car/:id', async (req, res) => {
     try {
-        const {id} = req.params
+        const { id } = req.params
         const car = await Car.findById(id)
-        if(!car) {
+        if (!car) {
             return res.status(404).json({
-                message : "Car not found"
+                message: "Car not found"
             })
         }
         if (car.carImage.startsWith('http://localhost:3000/')) {
@@ -149,9 +156,9 @@ app.patch('/car/:id', upload.single('image'), async (req, res) => {
         }
         const { carName, carBrand, carPrice } = req.body
         await Car.findByIdAndUpdate(id, {
-            carName : carName || car.carName,
-            carBrand : carBrand || car.carBrand,
-            carPrice : carPrice || car.carPrice,
+            carName: carName || car.carName,
+            carBrand: carBrand || car.carBrand,
+            carPrice: carPrice || car.carPrice,
             carImage: filename
         })
         res.status(200).json({
@@ -166,12 +173,9 @@ app.patch('/car/:id', upload.single('image'), async (req, res) => {
 })
 
 
-
-
-
 app.use('/storage', express.static('storage'))
 
 
-app.listen(PORT, ()=> {
+app.listen(PORT, () => {
     console.log(`NodeJS Project Started on ${PORT} Port`)
 })
