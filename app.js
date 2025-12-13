@@ -1,7 +1,7 @@
 
 const express = require('express')
 const connectToDatabase = require('./database')
-const Car = require('./model/carModel')
+const Book = require('./model/bookModel')
 const { multer, storage } = require('./middleware/multerConfig')
 const app = express()
 require('dotenv').config()
@@ -23,7 +23,7 @@ connectToDatabase()
 
 
 // Post API
-app.post('/car', (req, res, next) => {
+app.post('/book', (req, res, next) => {
     upload.single('image')
         (req, res, (error) => {
             if (error) {
@@ -42,74 +42,74 @@ app.post('/car', (req, res, next) => {
         } else {
             filename = `http://localhost:3000/${req.file.filename}`
         }
-        const { carName, carBrand, carPrice } = req.body
-        if (!carName || !carBrand || !carPrice) {
+        const { bookName, bookAuthor, bookPrice } = req.body
+        if (!bookName || !bookAuthor || !bookPrice) {
             return res.status(404).json({
                 message: "Please enter all the fields correctly"
             })
         }
-        await Car.create({
-            carName,
-            carBrand,
-            carPrice,
-            carImage: filename
+        await Book.create({
+            bookName,
+            bookAuthor,
+            bookPrice,
+            bookImage: filename
         })
         res.status(200).json({
-            message: "Car created successfully"
+            message: "Book created successfully"
         })
     } catch (error) {
         res.status(500).json({
-            message: "Fail to create car",
+            message: "Fail to create book",
             error: error.message
         })
     }
 })
 
 // Get API
-app.get('/car', async (req, res) => {
+app.get('/book', async (req, res) => {
     try {
-        const cars = await Car.find()
+        const books = await Book.find()
         res.status(200).json({
-            message: cars.length ? "Cars fetched successfully" : "No cars found",
-            ...(cars.length && { data: cars })
+            message: books.length ? "Books fetched successfully" : "No books found",
+            ...(books.length && { data: books })
         })
     } catch (error) {
         res.status(500).json({
-            message: "Failed to fetch cars",
+            message: "Failed to fetch books",
             error: error.message
         })
     }
 })
 
 // Get Single API
-app.get('/car/:id', async (req, res) => {
+app.get('/book/:id', async (req, res) => {
     try {
         const { id } = req.params
-        const car = await Car.findById(id)
-        res.status(car ? 200 : 404).json({
-            message: car ? "Car fetched successfully" : "Car not found",
-            ...(car && { data: car })
+        const book = await Book.findById(id)
+        res.status(book ? 200 : 404).json({
+            message: book ? "Book fetched successfully" : "Book not found",
+            ...(book && { data: book })
         })
     } catch (error) {
         res.status(500).json({
-            message: "Failed to fetch car",
+            message: "Failed to fetch book",
             error: error.message
         })
     }
 })
 
 // Delete Single API
-app.delete('/car/:id', async (req, res) => {
+app.delete('/book/:id', async (req, res) => {
     try {
         const { id } = req.params
-        const car = await Car.findById(id)
-        if (!car) {
+        const book = await Book.findById(id)
+        if (!book) {
             return res.status(404).json({
-                message: "Car not found"
+                message: "Book not found"
             })
         }
-        if (car.carImage.startsWith('http://localhost:3000/')) {
-            const filename = car.carImage.replace("http://localhost:3000/", "")
+        if (book.bookImage.startsWith('http://localhost:3000/')) {
+            const filename = book.bookImage.replace("http://localhost:3000/", "")
             const filePath = path.join(__dirname, "storage", filename)
             try {
                 await fs.unlink(filePath)
@@ -118,29 +118,29 @@ app.delete('/car/:id', async (req, res) => {
                 console.log(`Fail to delete the file : ${error.message}`)
             }
         }
-        await Car.findByIdAndDelete(id)
+        await Book.findByIdAndDelete(id)
         res.status(200).json({
-            message: "Car deleted successfully"
+            message: "Book deleted successfully"
         })
     } catch (error) {
         res.status(500).json({
-            message: "Failed to delete car",
+            message: "Failed to delete book",
             error: error.message
         })
     }
 })
 
 // Update API
-app.patch('/car/:id', upload.single('image'), async (req, res) => {
+app.patch('/book/:id', upload.single('image'), async (req, res) => {
     try {
         const { id } = req.params
-        const car = await Car.findById(id)
-        if (!car) {
+        const book = await Book.findById(id)
+        if (!book) {
             return res.status(404).json({
-                message: "Car not found"
+                message: "Book not found"
             })
         }
-        let filename = car.carImage
+        let filename = book.bookImage
         if (req.file) {
             if (filename.startsWith('http://localhost:3000/')) {
                 const oldFileName = filename.replace("http://localhost:3000/", "")
@@ -154,19 +154,19 @@ app.patch('/car/:id', upload.single('image'), async (req, res) => {
             }
             filename = `http://localhost:3000/${req.file.filename}`
         }
-        const { carName, carBrand, carPrice } = req.body
-        await Car.findByIdAndUpdate(id, {
-            carName: carName || car.carName,
-            carBrand: carBrand || car.carBrand,
-            carPrice: carPrice || car.carPrice,
-            carImage: filename
+        const { bookName, bookAuthor, bookPrice } = req.body
+        await Book.findByIdAndUpdate(id, {
+            bookName: bookName || book.bookName,
+            bookAuthor: bookAuthor || book.bookAuthor,
+            bookPrice: bookPrice || book.bookPrice,
+            bookImage: filename
         })
         res.status(200).json({
-            message: "Car updated successfully"
+            message: "Book updated successfully"
         })
     } catch (error) {
         res.status(500).json({
-            message: "Fail to update car",
+            message: "Fail to update book",
             error: error.message
         })
     }
