@@ -42,7 +42,7 @@ app.post('/book', (req, res, next) => {
         } else {
             filename = `http://localhost:3000/${req.file.filename}`
         }
-        const { bookName, bookAuthor, bookPrice, bookSubtitle } = req.body
+        const { bookName, bookAuthor, bookPrice, bookMoto } = req.body
         if (!bookName || !bookAuthor || !bookPrice) {
             return res.status(404).json({
                 message: "Please enter all the fields correctly"
@@ -52,7 +52,7 @@ app.post('/book', (req, res, next) => {
             bookName,
             bookAuthor,
             bookPrice,
-            bookSubtitle,
+            bookMoto,
             bookImage: filename
         })
         res.status(200).json({
@@ -155,10 +155,10 @@ app.patch('/book/:id', upload.single('bookImage'), async (req, res) => {
             }
             filename = `http://localhost:3000/${req.file.filename}`
         }
-        const { bookName, bookAuthor, bookPrice, bookSubtitle } = req.body
+        const { bookName, bookAuthor, bookPrice, bookMoto } = req.body
         await Book.findByIdAndUpdate(id, {
             bookName: bookName || book.bookName,
-            bookSubtitle: bookSubtitle || book.bookSubtitle,
+            bookMoto: bookMoto || book.bookMoto,
             bookAuthor: bookAuthor || book.bookAuthor,
             bookPrice: bookPrice || book.bookPrice,
             bookImage: filename
