@@ -10,7 +10,7 @@ const upload = multer({ storage: storage })
 const fs = require('fs').promises
 const path = require('path')
 const cors = require('cors')
-
+app.use(express.json())
 
 // Cors configuration
 app.use(cors({
@@ -24,7 +24,7 @@ connectToDatabase()
 
 // Post API
 app.post('/book', (req, res, next) => {
-    upload.single('image')
+    upload.single('bookImage')
         (req, res, (error) => {
             if (error) {
                 return res.status(400).json({
@@ -38,11 +38,11 @@ app.post('/book', (req, res, next) => {
     try {
         let filename
         if (!req.file) {
-            filename = 'https://www.focus2move.com/wp-content/uploads/2018/08/Bugatti-Divo-2019-1.jpg'
+            filename = 'https://readersspacenepal.com/wp-content/uploads/2023/01/psychology-of-money.jpg'
         } else {
             filename = `http://localhost:3000/${req.file.filename}`
         }
-        const { bookName, bookAuthor, bookPrice } = req.body
+        const { bookName, bookAuthor, bookPrice, bookSubtitle } = req.body
         if (!bookName || !bookAuthor || !bookPrice) {
             return res.status(404).json({
                 message: "Please enter all the fields correctly"
@@ -52,6 +52,7 @@ app.post('/book', (req, res, next) => {
             bookName,
             bookAuthor,
             bookPrice,
+            bookSubtitle,
             bookImage: filename
         })
         res.status(200).json({
@@ -131,7 +132,7 @@ app.delete('/book/:id', async (req, res) => {
 })
 
 // Update API
-app.patch('/book/:id', upload.single('image'), async (req, res) => {
+app.patch('/book/:id', upload.single('bookImage'), async (req, res) => {
     try {
         const { id } = req.params
         const book = await Book.findById(id)
@@ -154,9 +155,10 @@ app.patch('/book/:id', upload.single('image'), async (req, res) => {
             }
             filename = `http://localhost:3000/${req.file.filename}`
         }
-        const { bookName, bookAuthor, bookPrice } = req.body
+        const { bookName, bookAuthor, bookPrice, bookSubtitle } = req.body
         await Book.findByIdAndUpdate(id, {
             bookName: bookName || book.bookName,
+            bookSubtitle: bookSubtitle || book.bookSubtitle,
             bookAuthor: bookAuthor || book.bookAuthor,
             bookPrice: bookPrice || book.bookPrice,
             bookImage: filename
@@ -173,7 +175,7 @@ app.patch('/book/:id', upload.single('image'), async (req, res) => {
 })
 
 
-app.use('/storage', express.static('storage'))
+app.use('/', express.static('storage'))
 
 
 app.listen(PORT, () => {
