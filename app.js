@@ -14,7 +14,7 @@ app.use(express.json())
 
 // Cors configuration
 app.use(cors({
-    origin: ['http://localhost:5173']
+    origin: ['http://localhost:5173', 'https://book-management-brown.vercel.app/']
 }))
 
 
@@ -40,7 +40,7 @@ app.post('/book', (req, res, next) => {
         if (!req.file) {
             filename = 'https://readersspacenepal.com/wp-content/uploads/2023/01/psychology-of-money.jpg'
         } else {
-            filename = `http://localhost:3000/${req.file.filename}`
+            filename = `https://nodejs-crud-practice.onrender.com/${req.file.filename}`
         }
         const { bookName, bookAuthor, bookPrice, bookMoto } = req.body
         if (!bookName || !bookAuthor || !bookPrice) {
@@ -109,8 +109,8 @@ app.delete('/book/:id', async (req, res) => {
                 message: "Book not found"
             })
         }
-        if (book.bookImage.startsWith('http://localhost:3000/')) {
-            const filename = book.bookImage.replace("http://localhost:3000/", "")
+        if (book.bookImage.startsWith('https://nodejs-crud-practice.onrender.com/')) {
+            const filename = book.bookImage.replace("https://nodejs-crud-practice.onrender.com/", "")
             const filePath = path.join(__dirname, "storage", filename)
             try {
                 await fs.unlink(filePath)
@@ -143,8 +143,8 @@ app.patch('/book/:id', upload.single('bookImage'), async (req, res) => {
         }
         let filename = book.bookImage
         if (req.file) {
-            if (filename.startsWith('http://localhost:3000/')) {
-                const oldFileName = filename.replace("http://localhost:3000/", "")
+            if (filename.startsWith('https://nodejs-crud-practice.onrender.com/')) {
+                const oldFileName = filename.replace("https://nodejs-crud-practice.onrender.com/", "")
                 const filepath = path.join(__dirname, "storage", oldFileName)
                 try {
                     await fs.unlink(filepath)
@@ -153,7 +153,7 @@ app.patch('/book/:id', upload.single('bookImage'), async (req, res) => {
                     console.log(`Fail to delete the file : ${error.message}`)
                 }
             }
-            filename = `http://localhost:3000/${req.file.filename}`
+            filename = `https://nodejs-crud-practice.onrender.com/${req.file.filename}`
         }
         const { bookName, bookAuthor, bookPrice, bookMoto } = req.body
         await Book.findByIdAndUpdate(id, {
