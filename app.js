@@ -14,7 +14,7 @@ app.use(express.json())
 
 // Cors configuration
 app.use(cors({
-    origin: ['http://localhost:5173', 'https://book-management-brown.vercel.app/']
+    origin: ['https://book-management-brown.vercel.app/']
 }))
 
 
