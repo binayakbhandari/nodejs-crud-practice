@@ -16,7 +16,6 @@ app.use(express.json())
 app.use(cors({
     origin: [
         'https://book-management-brown.vercel.app',
-        'https://book-management-brown.vercel.app/create',
     ]
 }))
 
