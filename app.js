@@ -177,7 +177,7 @@ app.patch('/book/:id', upload.single('bookImage'), async (req, res) => {
 })
 
 
-app.use('/', express.static('storage'))
+app.use('./', express.static('storage'))
 
 
 app.listen(PORT, () => {
